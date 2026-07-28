@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "562484766953",
+    "project_id": "trekko-app-2026",
+    "storage_bucket": "trekko-app-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:562484766953:android:0d9df7b376324173566878",
+        "android_client_info": {
+          "package_name": "com.example.trekko"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-fCAsIQSzRuRNuV6UML8NMmwImjdwf1k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -29,4 +29,8 @@ class CartRepository {
 
     return snapshot.docs.map((e) => {'id': e.id, ...e.data()}).toList();
   }
+
+  Future<void> removeFromCart(String cartId) async {
+    await firestore.collection('cart').doc(cartId).delete();
+  }
 }

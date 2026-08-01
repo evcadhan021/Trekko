@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../../rental/presentation/pages/create_rantel_page.dart';
 import '../../domain/product_model.dart';
 import '../../presentation/providers/product_provider.dart';
@@ -103,21 +106,67 @@ class ProductDetailPage extends ConsumerWidget {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
 
-        child: SizedBox(
-          height: 50,
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.shopping_cart),
 
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CreateRentalPage(product: product),
-                ),
-              );
-            },
+                label: const Text('Keranjang'),
 
-            child: const Text('Sewa Sekarang'),
-          ),
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
+
+                  if (user == null) return;
+
+                  await ref
+                      .read(cartRepositoryProvider)
+                      .addToCart(
+                        userId: user.uid,
+                        productId: product.id,
+                        productName: product.name,
+                        imageUrl: product.imageUrl,
+                        pricePerDay: product.pricePerDay,
+                      );
+
+                  ref.invalidate(userCartProvider);
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Produk ditambahkan ke keranjang'),
+
+                        action: SnackBarAction(
+                          label: 'Lihat',
+
+                          onPressed: () {
+                            context.push('/cart');
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CreateRentalPage(product: product),
+                    ),
+                  );
+                },
+
+                child: const Text('Sewa Sekarang'),
+              ),
+            ),
+          ],
         ),
       ),
     );

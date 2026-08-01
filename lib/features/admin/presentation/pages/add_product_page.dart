@@ -15,9 +15,18 @@ class AddProductPage extends ConsumerStatefulWidget {
 }
 
 class _AddProductPageState extends ConsumerState<AddProductPage> {
+  // ==================================================
+  // FIREBASE STORAGE MODE (NONAKTIF SEMENTARA)
+  // ==================================================
+
   File? selectedImage;
 
   final ImagePicker picker = ImagePicker();
+
+  // ==================================================
+  // FORM
+  // ==================================================
+
   final nameController = TextEditingController();
   final categoryController = TextEditingController();
   final descriptionController = TextEditingController();
@@ -32,17 +41,38 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
       setState(() {
         isLoading = true;
       });
-      final imageUrl = await uploadImage();
+
+      // ==================================================
+      // MODE URL (AKTIF)
+      // ==================================================
+
       await ref
           .read(productRepositoryProvider)
           .addProduct(
-            name: nameController.text,
-            category: categoryController.text,
-            description: descriptionController.text,
-            imageUrl: imageUrl,
+            name: nameController.text.trim(),
+            category: categoryController.text.trim(),
+            description: descriptionController.text.trim(),
+            imageUrl: imageController.text.trim(),
             pricePerDay: int.parse(priceController.text),
             stock: int.parse(stockController.text),
           );
+
+      /*
+    ==================================================
+    MODE FIREBASE STORAGE (NONAKTIF)
+    ==================================================
+
+    final imageUrl = await uploadImage();
+
+    await ref.read(productRepositoryProvider).addProduct(
+      name: nameController.text.trim(),
+      category: categoryController.text.trim(),
+      description: descriptionController.text.trim(),
+      imageUrl: imageUrl,
+      pricePerDay: int.parse(priceController.text),
+      stock: int.parse(stockController.text),
+    );
+    */
 
       ref.invalidate(productsProvider);
 
@@ -59,6 +89,11 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
       isLoading = false;
     });
   }
+
+  // ==================================================
+  // FIREBASE STORAGE MODE (NONAKTIF SEMENTARA)
+  // Aktifkan saat Blaze Plan tersedia
+  // ==================================================
 
   // Fungsi untuk memilih gambar dari galeri //
   Future<void> pickImage() async {
@@ -132,33 +167,46 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
 
             const SizedBox(height: 12),
 
-            Column(
-              children: [
-                if (selectedImage != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      selectedImage!,
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-
-                const SizedBox(height: 12),
-
-                SizedBox(
-                  width: double.infinity,
-
-                  child: OutlinedButton.icon(
-                    onPressed: pickImage,
-                    icon: const Icon(Icons.image),
-                    label: const Text('Pilih Gambar'),
-                  ),
-                ),
-              ],
+            // ==================================================
+            // MODE URL (AKTIF)
+            // ==================================================
+            TextField(
+              controller: imageController,
+              decoration: const InputDecoration(labelText: 'URL Gambar'),
             ),
 
+            /*
+              ==================================================
+              MODE FIREBASE STORAGE (NONAKTIF)
+              ==================================================
+
+              Column(
+                children: [
+
+                  if (selectedImage != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(
+                        selectedImage!,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: pickImage,
+                      icon: const Icon(Icons.image),
+                      label: const Text('Pilih Gambar'),
+                    ),
+                  ),
+                ],
+              ),
+              */
             const SizedBox(height: 12),
 
             TextField(

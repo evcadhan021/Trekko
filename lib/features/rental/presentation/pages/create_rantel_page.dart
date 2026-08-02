@@ -61,6 +61,7 @@ class _CreateRentalPageState extends ConsumerState<CreateRentalPage> {
                 );
 
                 if (picked != null) {
+                  if (!mounted) return;
                   setState(() {
                     startDate = picked;
                   });
@@ -84,6 +85,7 @@ class _CreateRentalPageState extends ConsumerState<CreateRentalPage> {
                 );
 
                 if (picked != null) {
+                  if (!mounted) return;
                   setState(() {
                     endDate = picked;
                   });
@@ -111,6 +113,9 @@ class _CreateRentalPageState extends ConsumerState<CreateRentalPage> {
                   final user = FirebaseAuth.instance.currentUser;
 
                   if (user == null) return;
+                  final messenger = ScaffoldMessenger.of(context);
+                  final navigator = Navigator.of(context);
+
                   final isAvailable = await ref
                       .read(rentalRepositoryProvider)
                       .isProductAvailable(
@@ -120,16 +125,16 @@ class _CreateRentalPageState extends ConsumerState<CreateRentalPage> {
                         stock: widget.product.stock,
                       );
 
+                  if (!mounted) return;
+
                   if (!isAvailable) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Produk tidak tersedia pada tanggal tersebut',
-                          ),
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Produk tidak tersedia pada tanggal tersebut',
                         ),
-                      );
-                    }
+                      ),
+                    );
 
                     return;
                   }
@@ -154,15 +159,13 @@ class _CreateRentalPageState extends ConsumerState<CreateRentalPage> {
                       );
                   ref.invalidate(userRentalsProvider);
 
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Penyewaan berhasil dibuat'),
-                      ),
-                    );
+                  if (!mounted) return;
 
-                    Navigator.pop(context);
-                  }
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text('Penyewaan berhasil dibuat')),
+                  );
+
+                  navigator.pop();
                 },
                 child: const Text('Konfirmasi Sewa'),
               ),

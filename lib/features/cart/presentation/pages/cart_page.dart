@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../rental/presentation/providers/rental_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../providers/cart_provider.dart';
 
@@ -7,10 +9,12 @@ class CartPage extends ConsumerStatefulWidget {
   const CartPage({super.key});
 
   @override
-  _CartPageState createState() => _CartPageState();
+  @override
+  ConsumerState<CartPage> createState() => _CartPageState();
 }
 
 class _CartPageState extends ConsumerState<CartPage> {
+  final Set<String> selectedItems = {};
   @override
   Widget build(BuildContext context) {
     final cartItems = ref.watch(userCartProvider);
@@ -24,79 +28,90 @@ class _CartPageState extends ConsumerState<CartPage> {
             return const Center(child: Text('Keranjang masih kosong'));
           }
 
-          return ListView.builder(
-            itemCount: items.length,
-
-            itemBuilder: (context, index) {
-              final item = items[index];
-
-              return Card(
-                margin: const EdgeInsets.all(8),
-
-                child: ListTile(
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (_) {
-                          return AlertDialog(
-                            title: const Text('Hapus Produk?'),
-
-                            content: const Text(
-                              'Produk akan dihapus dari keranjang.',
-                            ),
-
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context, false);
-                                },
-                                child: const Text('Batal'),
-                              ),
-
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context, true);
-                                },
-                                child: const Text('Hapus'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-
-                      if (confirm != true) {
-                        return;
-                      }
-
-                      await ref
-                          .read(cartRepositoryProvider)
-                          .removeFromCart(item['id']);
-
-                      ref.invalidate(userCartProvider);
-                    },
-                  ),
-                  leading: Image.network(
-                    item['imageUrl'],
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                  ),
-
-                  title: Text(item['productName']),
-
-                  subtitle: Text('Rp ${item['pricePerDay']} / hari'),
+          return Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Dipilih: ${selectedItems.length} produk',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-              );
-            },
+              ),
+
+              Expanded(
+                child: ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final id = item['id']?.toString() ?? index.toString();
+
+                    return Card(
+                      margin: const EdgeInsets.all(8),
+                      child: ListTile(
+                        leading: Checkbox(
+                          value: selectedItems.contains(id),
+                          onChanged: (value) {
+                            setState(() {
+                              if (value == true) {
+                                selectedItems.add(id);
+                              } else {
+                                selectedItems.remove(id);
+                              }
+                            });
+                          },
+                        ),
+                        title: Text(item['productName']?.toString() ?? ''),
+                        subtitle: Text(
+                          'Rp ${item['pricePerDay'] ?? ''} / hari',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
 
         loading: () => const Center(child: CircularProgressIndicator()),
 
         error: (e, s) => Center(child: Text(e.toString())),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: selectedItems.isEmpty
+            ? null
+            : () async {
+                final user = FirebaseAuth.instance.currentUser;
+
+                if (user == null) return;
+
+                await ref
+                    .read(cartRepositoryProvider)
+                    .checkoutSelectedItems(selectedItems.toList(), user.uid);
+
+                ref.invalidate(userCartProvider);
+
+                ref.invalidate(userRentalsProvider);
+
+                setState(() {
+                  selectedItems.clear();
+                });
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Checkout berhasil')),
+                  );
+                }
+              },
+
+        icon: const Icon(Icons.shopping_bag),
+
+        label: Text(
+          selectedItems.isEmpty
+              ? 'Pilih Produk'
+              : 'Checkout (${selectedItems.length})',
+        ),
       ),
     );
   }

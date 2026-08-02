@@ -19,7 +19,9 @@ class _SplashPageState extends State<SplashPage> {
       final user = FirebaseAuth.instance.currentUser;
 
       // untuk cek apakah user sudah login atau belum, jika sudah login maka akan diarahkan ke halaman home, jika belum maka akan diarahkan ke halaman login
-      print(user?.email);
+      debugPrint(user?.email);
+
+      if (!mounted) return;
 
       if (user != null) {
         context.go('/home');

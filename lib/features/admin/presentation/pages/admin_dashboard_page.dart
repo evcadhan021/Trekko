@@ -28,79 +28,99 @@ class AdminDashboardPage extends ConsumerWidget {
       body: rentals.when(
         data: (items) {
           if (items.isEmpty) {
-            return const Center(child: Text('Belum ada rental'));
+            return ListView(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.notifications),
+                  title: const Text('Notifikasi'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    context.push('/admin-notifications');
+                  },
+                ),
+                const Center(child: Text('Belum ada rental')),
+              ],
+            );
           }
 
-          return ListView.builder(
-            itemCount: items.length,
+          return ListView(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.notifications),
+                title: const Text('Notifikasi'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  context.push('/admin-notifications');
+                },
+              ),
+              ...List.generate(items.length, (index) {
+                final rental = items[index];
 
-            itemBuilder: (context, index) {
-              final rental = items[index];
+                return Card(
+                  margin: const EdgeInsets.all(8),
 
-              return Card(
-                margin: const EdgeInsets.all(8),
-
-                child: ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AdminRentalDetailPage(rental: rental),
-                      ),
-                    );
-                  },
-                  title: Text(rental['productName'].toString()),
-
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-
-                    children: [
-                      Text('Penyewa: ${rental['userName'] ?? '-'}'),
-
-                      Text('Status: ${rental['status']}'),
-
-                      Text('${rental['totalDays']} hari'),
-
-                      Text('Rp ${rental['totalPrice']}'),
-                    ],
-                  ),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) async {
-                      await ref
-                          .read(adminRepositoryProvider)
-                          .updateRentalStatus(
-                            rentalId: rental['id'],
-                            status: value,
-                          );
-
-                      ref.invalidate(allRentalsProvider);
+                  child: ListTile(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AdminRentalDetailPage(rental: rental),
+                        ),
+                      );
                     },
+                    title: Text(rental['productName'].toString()),
 
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'confirmed',
-                        child: Text('Confirm'),
-                      ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
 
-                      const PopupMenuItem(
-                        value: 'active',
-                        child: Text('Active'),
-                      ),
+                      children: [
+                        Text('Penyewa: ${rental['userName'] ?? '-'}'),
 
-                      const PopupMenuItem(
-                        value: 'completed',
-                        child: Text('Completed'),
-                      ),
+                        Text('Status: ${rental['status']}'),
 
-                      const PopupMenuItem(
-                        value: 'cancelled_by_admin',
-                        child: Text('Cancel'),
-                      ),
-                    ],
+                        Text('${rental['totalDays']} hari'),
+
+                        Text('Rp ${rental['totalPrice']}'),
+                      ],
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) async {
+                        await ref
+                            .read(adminRepositoryProvider)
+                            .updateRentalStatus(
+                              rentalId: rental['id'],
+                              status: value,
+                            );
+
+                        ref.invalidate(allRentalsProvider);
+                      },
+
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'confirmed',
+                          child: Text('Confirm'),
+                        ),
+
+                        const PopupMenuItem(
+                          value: 'active',
+                          child: Text('Active'),
+                        ),
+
+                        const PopupMenuItem(
+                          value: 'completed',
+                          child: Text('Completed'),
+                        ),
+
+                        const PopupMenuItem(
+                          value: 'cancelled_by_admin',
+                          child: Text('Cancel'),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              }),
+            ],
           );
         },
 

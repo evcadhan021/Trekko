@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../../product/presentation/providers/category_provider.dart';
 import '../../../product/presentation/providers/product_provider.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
@@ -12,6 +15,8 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final products = ref.watch(productsProvider);
+    final userRole = ref.watch(userRoleProvider);
+    final cartItems = ref.watch(userCartProvider);
     final categories = [
       'Semua',
       'Carrier',
@@ -25,7 +30,86 @@ class HomePage extends ConsumerWidget {
     final searchQuery = ref.watch(searchQueryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('TREKKO')),
+      appBar: AppBar(
+        title: const Text('TREKKO'),
+        actions: [
+          userRole.when(
+            data: (value) {
+              if (value?.toLowerCase() != 'user') {
+                return const SizedBox.shrink();
+              }
+
+              return cartItems.when(
+                data: (items) {
+                  final itemCount = items.length;
+
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.shopping_cart_outlined),
+                        tooltip: 'Keranjang',
+                        onPressed: () => context.push('/cart'),
+                      ),
+                      if (itemCount > 0)
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            child: Text(
+                              itemCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+                error: (_, __) => IconButton(
+                  icon: const Icon(Icons.shopping_cart_outlined),
+                  tooltip: 'Keranjang',
+                  onPressed: () => context.push('/cart'),
+                ),
+              );
+            },
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+        ],
+      ),
 
       body: products.when(
         data: (items) {

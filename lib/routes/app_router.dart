@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:trekko/features/admin/presentation/pages/admin_notification_page.dart';
 
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 
@@ -54,5 +55,9 @@ final appRouter = GoRouter(
     ),
 
     GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
+    GoRoute(
+      path: '/admin-notifications',
+      builder: (context, state) => const AdminNotificationsPage(),
+    ),
   ],
 );

@@ -7,16 +7,16 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return NotificationRepository();
 });
 
-final userNotificationsProvider = FutureProvider<List<Map<String, dynamic>>>((
+final userNotificationsProvider = StreamProvider<List<Map<String, dynamic>>>((
   ref,
-) async {
+) {
   final user = FirebaseAuth.instance.currentUser;
 
   if (user == null) {
-    return [];
+    return Stream.value(<Map<String, dynamic>>[]);
   }
 
   return ref
       .read(notificationRepositoryProvider)
-      .getUserNotifications(user.uid);
+      .getUserNotificationsStream(user.uid);
 });

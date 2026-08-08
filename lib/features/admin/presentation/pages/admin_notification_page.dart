@@ -12,7 +12,6 @@ class AdminNotificationsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Notifikasi Admin')),
-
       body: notifications.when(
         data: (items) {
           if (items.isEmpty) {
@@ -21,27 +20,39 @@ class AdminNotificationsPage extends ConsumerWidget {
 
           return ListView.builder(
             itemCount: items.length,
-
             itemBuilder: (context, index) {
               final notification = items[index];
 
+              // Langkah 2: Menambahkan variabel isRead
+              final isRead = notification['isRead'] ?? false;
+
               return Card(
+                // Langkah 2: Mengatur warna background card berdasarkan status isRead
+                color: isRead ? null : const Color.fromRGBO(33, 150, 243, 0.08),
                 margin: const EdgeInsets.all(8),
-
                 child: ListTile(
-                  leading: const Icon(Icons.notifications),
-
+                  leading: Icon(
+                    isRead
+                        ? Icons.notifications_none
+                        : Icons.notifications_active,
+                  ),
                   title: Text(notification['title'].toString()),
-
                   subtitle: Text(notification['message'].toString()),
+                  onTap: () async {
+                    if (!isRead) {
+                      await ref
+                          .read(notificationRepositoryProvider)
+                          .markAsRead(notification['id']);
+
+                      ref.invalidate(userNotificationsProvider);
+                    }
+                  },
                 ),
               );
             },
           );
         },
-
         loading: () => const Center(child: CircularProgressIndicator()),
-
         error: (e, s) => Center(child: Text(e.toString())),
       ),
     );

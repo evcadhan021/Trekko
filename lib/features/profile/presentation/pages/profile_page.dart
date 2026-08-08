@@ -67,19 +67,31 @@ class ProfilePage extends ConsumerWidget {
                 ),
                 role.when(
                   data: (value) {
-                    if (value != 'admin') {
-                      return const SizedBox();
+                    if (value == 'admin') {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.push('/admin');
+                          },
+                          child: const Text('Dashboard Admin'),
+                        ),
+                      );
                     }
 
-                    return SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.push('/admin');
-                        },
-                        child: const Text('Dashboard Admin'),
-                      ),
-                    );
+                    if (value?.toLowerCase() == 'user') {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.push('/notifications');
+                          },
+                          child: const Text('Notifikasi Saya'),
+                        ),
+                      );
+                    }
+
+                    return const SizedBox();
                   },
 
                   loading: () => const SizedBox(),

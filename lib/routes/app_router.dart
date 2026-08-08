@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:trekko/features/admin/presentation/pages/admin_notification_page.dart';
+import 'package:trekko/features/notification/presentation/pages/user_notifications_page.dart';
 
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 
@@ -58,6 +59,16 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/admin-notifications',
       builder: (context, state) => const AdminNotificationsPage(),
+    ),
+    GoRoute(
+      path: '/notifications',
+      redirect: (context, state) {
+        if (!AuthGuard.isLoggedIn()) {
+          return '/login';
+        }
+        return null;
+      },
+      builder: (context, state) => const UserNotificationsPage(),
     ),
   ],
 );

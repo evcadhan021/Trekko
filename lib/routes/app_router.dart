@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:trekko/features/admin/presentation/pages/admin_notification_page.dart';
+import 'package:trekko/features/chat/presentation/pages/admin_chat_detail_page.dart';
+import 'package:trekko/features/chat/presentation/pages/admin_chat_list_page.dart';
 import 'package:trekko/features/notification/presentation/pages/user_notifications_page.dart';
 
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
@@ -69,6 +71,17 @@ final appRouter = GoRouter(
         return null;
       },
       builder: (context, state) => const UserNotificationsPage(),
+    ),
+    GoRoute(
+      path: '/admin-chat-list',
+      builder: (context, state) => const AdminChatListPage(),
+    ),
+    GoRoute(
+      path: '/admin-chat-detail',
+      builder: (context, state) {
+        final userId = state.extra as String? ?? '';
+        return AdminChatDetailPage(userId: userId);
+      },
     ),
   ],
 );

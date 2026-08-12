@@ -1,8 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../rental/presentation/providers/rental_provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../../rental/presentation/providers/rental_provider.dart';
 import '../providers/cart_provider.dart';
 
 class CartPage extends ConsumerStatefulWidget {
@@ -14,7 +14,6 @@ class CartPage extends ConsumerStatefulWidget {
 
 class _CartPageState extends ConsumerState<CartPage> {
   final Set<String> selectedItems = {};
-
   DateTime? startDate;
   DateTime? endDate;
 
@@ -27,10 +26,7 @@ class _CartPageState extends ConsumerState<CartPage> {
     );
 
     if (result == null) return;
-
-    setState(() {
-      startDate = result;
-    });
+    setState(() => startDate = result);
   }
 
   Future<void> pickEndDate() async {
@@ -42,110 +38,217 @@ class _CartPageState extends ConsumerState<CartPage> {
     );
 
     if (result == null) return;
+    setState(() => endDate = result);
+  }
 
-    setState(() {
-      endDate = result;
-    });
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Belum dipilih';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   @override
   Widget build(BuildContext context) {
     final cartItems = ref.watch(userCartProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Keranjang Saya')),
-
       body: cartItems.when(
         data: (items) {
           if (items.isEmpty) {
-            return const Center(child: Text('Keranjang masih kosong'));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(28),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.shopping_bag_outlined,
+                          size: 48,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Keranjang masih kosong',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Tambahkan produk favorit Anda untuk memulai sewa.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
           }
 
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-
-                      child: OutlinedButton(
-                        onPressed: pickStartDate,
-
-                        child: Text(
-                          startDate == null
-                              ? 'Pilih Tanggal Sewa'
-                              : startDate.toString(),
-                        ),
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [colorScheme.primary, const Color(0xFF0F172A)],
                       ),
+                      borderRadius: BorderRadius.circular(22),
                     ),
-
-                    const SizedBox(height: 8),
-
-                    SizedBox(
-                      width: double.infinity,
-
-                      child: OutlinedButton(
-                        onPressed: pickEndDate,
-
-                        child: Text(
-                          endDate == null
-                              ? 'Pilih Tanggal Kembali'
-                              : endDate.toString(),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Pilihan Anda',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${selectedItems.length} produk dipilih',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                        const Icon(
+                          Icons.check_circle_outline_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Dipilih: ${selectedItems.length} produk',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-
-              Expanded(
-                child: ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    final id = item['id']?.toString() ?? index.toString();
-
-                    return Card(
-                      margin: const EdgeInsets.all(8),
-                      child: ListTile(
-                        leading: Checkbox(
-                          value: selectedItems.contains(id),
-                          onChanged: (value) {
-                            setState(() {
-                              if (value == true) {
-                                selectedItems.add(id);
-                              } else {
-                                selectedItems.remove(id);
-                              }
-                            });
-                          },
-                        ),
-                        title: Text(item['productName']?.toString() ?? ''),
-                        subtitle: Text(
-                          'Rp ${item['pricePerDay'] ?? ''} / hari',
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _dateCard(
+                          title: 'Tanggal sewa',
+                          value: _formatDate(startDate),
+                          icon: Icons.calendar_month_rounded,
+                          onTap: pickStartDate,
                         ),
                       ),
-                    );
-                  },
-                ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _dateCard(
+                          title: 'Tanggal kembali',
+                          value: _formatDate(endDate),
+                          icon: Icons.event_available_rounded,
+                          onTap: pickEndDate,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        final id = item['id']?.toString() ?? index.toString();
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: selectedItems.contains(id),
+                                onChanged: (value) {
+                                  setState(() {
+                                    if (value == true) {
+                                      selectedItems.add(id);
+                                    } else {
+                                      selectedItems.remove(id);
+                                    }
+                                  });
+                                },
+                              ),
+                              const SizedBox(width: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  item['imageUrl']?.toString() ?? '',
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 60,
+                                    height: 60,
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(
+                                      Icons.image_not_supported_outlined,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['productName']?.toString() ?? '',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Rp ${item['pricePerDay'] ?? 0} / hari',
+                                      style: TextStyle(
+                                        color: colorScheme.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           );
         },
-
         loading: () => const Center(child: CircularProgressIndicator()),
-
         error: (e, s) => Center(child: Text(e.toString())),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -156,13 +259,25 @@ class _CartPageState extends ConsumerState<CartPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Pilih tanggal sewa terlebih dahulu'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+
+                if (endDate!.isBefore(startDate!)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Tanggal kembali tidak boleh lebih awal dari tanggal sewa',
+                      ),
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                   return;
                 }
 
                 final user = FirebaseAuth.instance.currentUser;
-
                 if (user == null) return;
 
                 await ref
@@ -175,26 +290,70 @@ class _CartPageState extends ConsumerState<CartPage> {
                     );
 
                 ref.invalidate(userCartProvider);
-
                 ref.invalidate(userRentalsProvider);
-
-                setState(() {
-                  selectedItems.clear();
-                });
+                setState(() => selectedItems.clear());
 
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Checkout berhasil')),
+                    const SnackBar(
+                      content: Text('Checkout berhasil'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
                   );
                 }
               },
-
-        icon: const Icon(Icons.shopping_bag),
-
+        icon: const Icon(Icons.shopping_bag_rounded),
         label: Text(
           selectedItems.isEmpty
               ? 'Pilih Produk'
               : 'Checkout (${selectedItems.length})',
+        ),
+      ),
+    );
+  }
+
+  Widget _dateCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

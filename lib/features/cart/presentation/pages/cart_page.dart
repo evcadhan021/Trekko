@@ -52,6 +52,7 @@ class _CartPageState extends ConsumerState<CartPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(title: const Text('Keranjang Saya')),
       body: cartItems.when(
         data: (items) {
@@ -59,32 +60,51 @@ class _CartPageState extends ConsumerState<CartPage> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(28),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 74,
+                        height: 74,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Icon(
                           Icons.shopping_bag_outlined,
-                          size: 48,
+                          size: 36,
                           color: colorScheme.primary,
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Keranjang masih kosong',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Keranjang masih kosong',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Tambahkan produk favorit Anda untuk memulai sewa.',
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Tambahkan produk favorit Anda untuk memulai sewa.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Color(0xFF64748B), height: 1.5),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -98,12 +118,19 @@ class _CartPageState extends ConsumerState<CartPage> {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [colorScheme.primary, const Color(0xFF0F172A)],
                       ),
                       borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.22),
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
@@ -118,7 +145,7 @@ class _CartPageState extends ConsumerState<CartPage> {
                                   fontSize: 12,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Text(
                                 '${selectedItems.length} produk dipilih',
                                 style: const TextStyle(
@@ -130,10 +157,18 @@ class _CartPageState extends ConsumerState<CartPage> {
                             ],
                           ),
                         ),
-                        const Icon(
-                          Icons.check_circle_outline_rounded,
-                          color: Colors.white,
-                          size: 32,
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.check_circle_outline_rounded,
+                            color: Colors.white,
+                            size: 26,
+                          ),
                         ),
                       ],
                     ),
@@ -201,12 +236,12 @@ class _CartPageState extends ConsumerState<CartPage> {
                                 borderRadius: BorderRadius.circular(12),
                                 child: Image.network(
                                   item['imageUrl']?.toString() ?? '',
-                                  width: 60,
-                                  height: 60,
+                                  width: 62,
+                                  height: 62,
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, __, ___) => Container(
-                                    width: 60,
-                                    height: 60,
+                                    width: 62,
+                                    height: 62,
                                     color: Colors.grey.shade200,
                                     child: const Icon(
                                       Icons.image_not_supported_outlined,

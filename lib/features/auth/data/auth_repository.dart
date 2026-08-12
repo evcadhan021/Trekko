@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -65,5 +68,38 @@ class AuthRepository {
     final doc = await _firestore.collection('users').doc(uid).get();
 
     return doc.data()?['role'];
+  }
+
+  Future<void> updateUserProfile({
+    required String uid,
+    String? name,
+    String? photoUrl,
+  }) async {
+    final data = <String, dynamic>{};
+
+    if (name != null && name.trim().isNotEmpty) {
+      data['name'] = name.trim();
+    }
+
+    if (photoUrl != null) {
+      data['photoUrl'] = photoUrl;
+    }
+
+    if (data.isNotEmpty) {
+      await _firestore.collection('users').doc(uid).update(data);
+    }
+  }
+
+  Future<String> uploadProfileImage({
+    required String uid,
+    required File file,
+  }) async {
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('profile_images')
+        .child('$uid.jpg');
+
+    await storageRef.putFile(file);
+    return await storageRef.getDownloadURL();
   }
 }

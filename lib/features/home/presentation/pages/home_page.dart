@@ -249,16 +249,19 @@ class HomePage extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_forward_rounded,
-                            color: Colors.white,
+                        GestureDetector(
+                          onTap: () => context.push('/hiking-guide'),
+                          child: Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.16),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: const Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -345,7 +348,7 @@ class HomePage extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () => context.push('/all-products'),
                         child: const Text('Lihat semua'),
                       ),
                     ],

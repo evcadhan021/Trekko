@@ -5,20 +5,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/admin_constants.dart';
 import '../../data/chat_repository.dart';
-import '../../../product/domain/product_model.dart';
 
-class ChatWithAdminPage extends ConsumerStatefulWidget {
-  final ProductModel product;
-
-  const ChatWithAdminPage({super.key, required this.product});
+class UserAdminChatPage extends ConsumerStatefulWidget {
+  const UserAdminChatPage({super.key});
 
   @override
-  ConsumerState<ChatWithAdminPage> createState() => _ChatWithAdminPageState();
+  ConsumerState<UserAdminChatPage> createState() => _UserAdminChatPageState();
 }
 
-class _ChatWithAdminPageState extends ConsumerState<ChatWithAdminPage> {
+class _UserAdminChatPageState extends ConsumerState<UserAdminChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ChatRepository _chatRepository = ChatRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _chatRepository.markAllAdminMessagesAsRead(user.uid);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -28,9 +36,9 @@ class _ChatWithAdminPageState extends ConsumerState<ChatWithAdminPage> {
 
   Future<void> _sendMessage() async {
     final user = FirebaseAuth.instance.currentUser;
-    final message = _messageController.text.trim();
+    final text = _messageController.text.trim();
 
-    if (user == null || message.isEmpty) return;
+    if (user == null || text.isEmpty) return;
 
     final profile = await FirebaseFirestore.instance
         .collection('users')
@@ -46,26 +54,14 @@ class _ChatWithAdminPageState extends ConsumerState<ChatWithAdminPage> {
     await _chatRepository.sendMessageToAdmin(
       userId: user.uid,
       userName: userName,
-      productName: widget.product.name,
-      productId: widget.product.id,
-      message: message,
+      productName: 'Chat dengan Admin',
+      message: text,
     );
 
     _messageController.clear();
     if (mounted) {
       FocusScope.of(context).unfocus();
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        _chatRepository.markAllAdminMessagesAsRead(user.uid);
-      }
-    });
   }
 
   @override
@@ -81,7 +77,7 @@ class _ChatWithAdminPageState extends ConsumerState<ChatWithAdminPage> {
     final stream = _chatRepository.getMessagesStream(user.uid);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Chat Admin - ${widget.product.name}')),
+      appBar: AppBar(title: const Text('Chat Admin')),
       body: Column(
         children: [
           Expanded(
@@ -99,7 +95,8 @@ class _ChatWithAdminPageState extends ConsumerState<ChatWithAdminPage> {
                     child: Padding(
                       padding: EdgeInsets.all(20),
                       child: Text(
-                        'Mulai chat dengan admin untuk menanyakan produk ini.',
+                        'Belum ada percakapan dengan admin. Silakan kirim pertanyaan Anda.',
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   );
@@ -125,15 +122,14 @@ class _ChatWithAdminPageState extends ConsumerState<ChatWithAdminPage> {
                               ? CrossAxisAlignment.start
                               : CrossAxisAlignment.end,
                           children: [
-                            if (isAdmin)
-                              const Text(
-                                'Admin',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF64748B),
-                                ),
+                            Text(
+                              isAdmin ? 'Admin' : 'Anda',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
                               ),
+                            ),
                             const SizedBox(height: 4),
                             Container(
                               margin: const EdgeInsets.only(bottom: 10),
@@ -176,7 +172,7 @@ class _ChatWithAdminPageState extends ConsumerState<ChatWithAdminPage> {
                       minLines: 1,
                       maxLines: 4,
                       decoration: InputDecoration(
-                        hintText: 'Tanya admin tentang produk ini...',
+                        hintText: 'Tulis pesan untuk admin...',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

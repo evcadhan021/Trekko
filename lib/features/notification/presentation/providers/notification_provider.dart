@@ -20,3 +20,9 @@ final userNotificationsProvider = StreamProvider<List<Map<String, dynamic>>>((
       .read(notificationRepositoryProvider)
       .getUserNotificationsStream(user.uid);
 });
+
+final adminNotificationsProvider = StreamProvider<List<Map<String, dynamic>>>((
+  ref,
+) {
+  return ref.read(notificationRepositoryProvider).getAllNotificationsStream();
+});

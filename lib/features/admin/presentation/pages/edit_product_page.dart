@@ -26,21 +26,15 @@ class _EditProductPageState extends ConsumerState<EditProductPage> {
   @override
   void initState() {
     super.initState();
-
     nameController = TextEditingController(text: widget.product.name);
-
     categoryController = TextEditingController(text: widget.product.category);
-
     descriptionController = TextEditingController(
       text: widget.product.description,
     );
-
     imageController = TextEditingController(text: widget.product.imageUrl);
-
     priceController = TextEditingController(
       text: widget.product.pricePerDay.toString(),
     );
-
     stockController = TextEditingController(
       text: widget.product.stock.toString(),
     );
@@ -48,101 +42,97 @@ class _EditProductPageState extends ConsumerState<EditProductPage> {
 
   Future<void> updateProduct() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
+      setState(() => isLoading = true);
 
       await ref
           .read(productRepositoryProvider)
           .updateProduct(
             productId: widget.product.id,
-            name: nameController.text,
-            category: categoryController.text,
-            description: descriptionController.text,
-            imageUrl: imageController.text,
+            name: nameController.text.trim(),
+            category: categoryController.text.trim(),
+            description: descriptionController.text.trim(),
+            imageUrl: imageController.text.trim(),
             pricePerDay: int.parse(priceController.text),
             stock: int.parse(stockController.text),
           );
 
       ref.invalidate(productsProvider);
-
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-      });
-    }
+
+    if (mounted) setState(() => isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Produk')),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text(
+              'Perbarui Produk',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 18),
             TextField(
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Nama Produk'),
             ),
-
             const SizedBox(height: 12),
-
             TextField(
               controller: categoryController,
               decoration: const InputDecoration(labelText: 'Kategori'),
             ),
-
             const SizedBox(height: 12),
-
-            TextField(
-              controller: priceController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Harga'),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Harga'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: stockController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Stok'),
+                  ),
+                ),
+              ],
             ),
-
             const SizedBox(height: 12),
-
-            TextField(
-              controller: stockController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Stok'),
-            ),
-
-            const SizedBox(height: 12),
-
             TextField(
               controller: imageController,
               decoration: const InputDecoration(labelText: 'URL Gambar'),
             ),
-
             const SizedBox(height: 12),
-
             TextField(
               controller: descriptionController,
               maxLines: 4,
               decoration: const InputDecoration(labelText: 'Deskripsi'),
             ),
-
             const SizedBox(height: 24),
-
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: isLoading ? null : updateProduct,
-                child: Text(isLoading ? 'Menyimpan...' : 'Update Produk'),
+                icon: const Icon(Icons.update_rounded),
+                label: Text(isLoading ? 'Menyimpan...' : 'Update Produk'),
               ),
             ),
           ],

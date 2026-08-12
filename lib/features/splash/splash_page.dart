@@ -24,8 +24,6 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -33,7 +31,7 @@ class _SplashPageState extends State<SplashPage> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [colorScheme.primary, const Color(0xFF0F172A)],
+            colors: [const Color(0xFF1E9E5A), const Color(0xFF0F172A)],
           ),
         ),
         child: SafeArea(
@@ -43,8 +41,8 @@ class _SplashPageState extends State<SplashPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 110,
-                  height: 110,
+                  width: 118,
+                  height: 118,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.16),
                     shape: BoxShape.circle,
@@ -54,7 +52,7 @@ class _SplashPageState extends State<SplashPage> {
                   ),
                   child: const Icon(
                     Icons.terrain_rounded,
-                    size: 52,
+                    size: 54,
                     color: Colors.white,
                   ),
                 ),
@@ -62,9 +60,9 @@ class _SplashPageState extends State<SplashPage> {
                 const Text(
                   'TREKKO',
                   style: TextStyle(
-                    fontSize: 36,
+                    fontSize: 38,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
+                    letterSpacing: 2.2,
                     color: Colors.white,
                   ),
                 ),
@@ -78,10 +76,10 @@ class _SplashPageState extends State<SplashPage> {
                     letterSpacing: 0.2,
                   ),
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 38),
                 const SizedBox(
-                  width: 32,
-                  height: 32,
+                  width: 34,
+                  height: 34,
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     strokeWidth: 3,

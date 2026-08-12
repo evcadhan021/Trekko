@@ -75,28 +75,53 @@ class _AdminChatDetailPageState extends ConsumerState<AdminChatDetailPage> {
                     final message = messages[index];
                     final isAdmin =
                         message['senderId'] == AdminConstants.adminUid;
+                    final senderName =
+                        message['senderName']?.toString() ??
+                        (isAdmin ? 'Admin' : 'Pengguna');
                     final text = message['message']?.toString() ?? '';
 
                     return Align(
                       alignment: isAdmin
                           ? Alignment.centerRight
                           : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
+                      child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 280),
-                        decoration: BoxDecoration(
-                          color: isAdmin ? Colors.blue : Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          text,
-                          style: TextStyle(
-                            color: isAdmin ? Colors.white : Colors.black87,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: isAdmin
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              senderName,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isAdmin
+                                    ? Colors.blue
+                                    : Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Text(
+                                text,
+                                style: TextStyle(
+                                  color: isAdmin
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );

@@ -83,6 +83,43 @@ class RentalRepository {
     });
   }
 
+  Future<void> deleteRental(String rentalId) async {
+    final doc = firestore.collection('rentals').doc(rentalId);
+    final snapshot = await doc.get();
+
+    if (!snapshot.exists) {
+      return;
+    }
+
+    await doc.delete();
+  }
+
+  Future<void> deleteUserHistory(String userId) async {
+    final snapshot = await firestore
+        .collection('rentals')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    final historyDocs = snapshot.docs.where((doc) {
+      final status = (doc.data()['status'] ?? '').toString();
+      return status == 'cancelled' ||
+          status == 'cancelled_by_admin' ||
+          status == 'completed';
+    });
+
+    for (final doc in historyDocs) {
+      await doc.reference.delete();
+    }
+  }
+
+  Future<void> deleteAllRentals() async {
+    final snapshot = await firestore.collection('rentals').get();
+
+    for (final doc in snapshot.docs) {
+      await doc.reference.delete();
+    }
+  }
+
   Future<bool> isProductAvailable({
     required String productId,
     required DateTime startDate,

@@ -15,17 +15,8 @@ class AddProductPage extends ConsumerStatefulWidget {
 }
 
 class _AddProductPageState extends ConsumerState<AddProductPage> {
-  // ==================================================
-  // FIREBASE STORAGE MODE (NONAKTIF SEMENTARA)
-  // ==================================================
-
   File? selectedImage;
-
   final ImagePicker picker = ImagePicker();
-
-  // ==================================================
-  // FORM
-  // ==================================================
 
   final nameController = TextEditingController();
   final categoryController = TextEditingController();
@@ -38,13 +29,15 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
 
   Future<void> saveProduct() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
+      setState(() => isLoading = true);
 
-      // ==================================================
-      // MODE URL (AKTIF)
-      // ==================================================
+      if (nameController.text.trim().isEmpty ||
+          categoryController.text.trim().isEmpty ||
+          imageController.text.trim().isEmpty ||
+          priceController.text.trim().isEmpty ||
+          stockController.text.trim().isEmpty) {
+        throw Exception('Semua field harus diisi terlebih dahulu');
+      }
 
       await ref
           .read(productRepositoryProvider)
@@ -57,48 +50,23 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
             stock: int.parse(stockController.text),
           );
 
-      /*
-    ==================================================
-    MODE FIREBASE STORAGE (NONAKTIF)
-    ==================================================
-
-    final imageUrl = await uploadImage();
-
-    await ref.read(productRepositoryProvider).addProduct(
-      name: nameController.text.trim(),
-      category: categoryController.text.trim(),
-      description: descriptionController.text.trim(),
-      imageUrl: imageUrl,
-      pricePerDay: int.parse(priceController.text),
-      stock: int.parse(stockController.text),
-    );
-    */
-
       ref.invalidate(productsProvider);
 
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-      });
-    }
+
+    if (mounted) setState(() => isLoading = false);
   }
 
-  // ==================================================
-  // FIREBASE STORAGE MODE (NONAKTIF SEMENTARA)
-  // Aktifkan saat Blaze Plan tersedia
-  // ==================================================
-
-  // Fungsi untuk memilih gambar dari galeri //
   Future<void> pickImage() async {
     final file = await picker.pickImage(
       source: ImageSource.gallery,
@@ -106,125 +74,87 @@ class _AddProductPageState extends ConsumerState<AddProductPage> {
     );
 
     if (file == null) return;
-
-    setState(() {
-      selectedImage = File(file.path);
-    });
+    setState(() => selectedImage = File(file.path));
   }
 
-  // Fungsi untuk mengunggah gambar ke Firebase Storage //
   Future<String> uploadImage() async {
     if (selectedImage == null) {
       throw Exception('Pilih gambar terlebih dahulu');
     }
 
     final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-
     final refStorage = FirebaseStorage.instance
         .ref()
         .child('products')
         .child('$fileName.jpg');
 
     await refStorage.putFile(selectedImage!);
-
-    return await refStorage.getDownloadURL();
+    return refStorage.getDownloadURL();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Tambah Produk')),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text(
+              'Informasi Produk',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 18),
             TextField(
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Nama Produk'),
             ),
-
             const SizedBox(height: 12),
-
             TextField(
               controller: categoryController,
               decoration: const InputDecoration(labelText: 'Kategori'),
             ),
-
             const SizedBox(height: 12),
-
-            TextField(
-              controller: priceController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Harga per Hari'),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Harga per Hari',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: stockController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Stok'),
+                  ),
+                ),
+              ],
             ),
-
             const SizedBox(height: 12),
-
-            TextField(
-              controller: stockController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Stok'),
-            ),
-
-            const SizedBox(height: 12),
-
-            // ==================================================
-            // MODE URL (AKTIF)
-            // ==================================================
             TextField(
               controller: imageController,
               decoration: const InputDecoration(labelText: 'URL Gambar'),
             ),
-
-            /*
-              ==================================================
-              MODE FIREBASE STORAGE (NONAKTIF)
-              ==================================================
-
-              Column(
-                children: [
-
-                  if (selectedImage != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        selectedImage!,
-                        height: 180,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-
-                  const SizedBox(height: 12),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: pickImage,
-                      icon: const Icon(Icons.image),
-                      label: const Text('Pilih Gambar'),
-                    ),
-                  ),
-                ],
-              ),
-              */
             const SizedBox(height: 12),
-
             TextField(
               controller: descriptionController,
               maxLines: 4,
               decoration: const InputDecoration(labelText: 'Deskripsi'),
             ),
-
             const SizedBox(height: 24),
-
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: isLoading ? null : saveProduct,
-                child: Text(isLoading ? 'Menyimpan...' : 'Simpan Produk'),
+                icon: const Icon(Icons.save_rounded),
+                label: Text(isLoading ? 'Menyimpan...' : 'Simpan Produk'),
               ),
             ),
           ],

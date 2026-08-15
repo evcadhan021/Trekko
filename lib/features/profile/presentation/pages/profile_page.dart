@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../core/theme/theme_mode_provider.dart';
 import '../../../notification/presentation/providers/notification_provider.dart';
 import '../../../rental/presentation/providers/rental_provider.dart';
 
@@ -271,6 +272,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final profile = ref.watch(userProfileProvider);
     final role = ref.watch(userRoleProvider);
     final notifications = ref.watch(userNotificationsProvider);
+    final isDarkMode = ref.watch(appThemeModeProvider) == ThemeMode.dark;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -568,6 +570,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     },
                     loading: () => const SizedBox(),
                     error: (_, __) => const SizedBox(),
+                  ),
+                  const SizedBox(height: 18),
+                  Card(
+                    child: SwitchListTile.adaptive(
+                      value: isDarkMode,
+                      onChanged: (value) {
+                        ref.read(appThemeModeProvider.notifier).toggle(value);
+                      },
+                      title: const Text('Dark mode'),
+                      subtitle: const Text(
+                        'Aktifkan tampilan gelap untuk semua layar',
+                      ),
+                      secondary: const Icon(Icons.dark_mode_rounded),
+                    ),
                   ),
                   const SizedBox(height: 18),
                   SizedBox(

@@ -139,10 +139,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   color: Colors.white.withValues(alpha: 0.2),
                                 ),
                               ),
-                              child: const Icon(
-                                Icons.terrain_rounded,
-                                size: 46,
-                                color: Colors.white,
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/icon/logo trekko.png',
+                                  width: 68,
+                                  height: 68,
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 20),

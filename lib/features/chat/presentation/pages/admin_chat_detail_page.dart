@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/admin_constants.dart';
+import '../../../admin/presentation/providers/admin_provider.dart';
 import '../../data/chat_repository.dart';
 
 class AdminChatDetailPage extends ConsumerStatefulWidget {
@@ -33,6 +34,15 @@ class _AdminChatDetailPageState extends ConsumerState<AdminChatDetailPage> {
 
     _messageController.clear();
     if (mounted) FocusScope.of(context).unfocus();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _chatRepository.markAllUserMessagesAsRead(widget.userId);
+      ref.invalidate(adminChatUnreadCountProvider);
+    });
   }
 
   @override

@@ -89,6 +89,7 @@ class ChatRepository {
       'senderRole': 'user',
       'senderName': normalizedName,
       'message': trimmed,
+      'isRead': false,
       'createdAt': now,
     });
 
@@ -154,12 +155,38 @@ class ChatRepository {
     }
   }
 
+  Future<void> markAllUserMessagesAsRead(String userId) async {
+    final snapshot = await firestore
+        .collection('admin_chats')
+        .doc(userId)
+        .collection('messages')
+        .where('senderId', isEqualTo: userId)
+        .where('isRead', isEqualTo: false)
+        .get();
+
+    for (final doc in snapshot.docs) {
+      await doc.reference.update({'isRead': true});
+    }
+  }
+
   Future<int> getUnreadAdminReplyCount(String userId) async {
     final snapshot = await firestore
         .collection('admin_chats')
         .doc(userId)
         .collection('messages')
         .where('senderId', isEqualTo: AdminConstants.adminUid)
+        .where('isRead', isEqualTo: false)
+        .get();
+
+    return snapshot.docs.length;
+  }
+
+  Future<int> getUnreadUserMessagesCount(String userId) async {
+    final snapshot = await firestore
+        .collection('admin_chats')
+        .doc(userId)
+        .collection('messages')
+        .where('senderId', isEqualTo: userId)
         .where('isRead', isEqualTo: false)
         .get();
 
@@ -189,6 +216,7 @@ class ChatRepository {
       final data = doc.data();
       final rawUserName = (data['userName'] ?? '').toString().trim();
       final userId = (data['userId'] ?? doc.id).toString();
+      final unreadCount = await getUnreadUserMessagesCount(userId);
 
       final resolvedName =
           rawUserName.isNotEmpty && rawUserName.toLowerCase() != 'user'
@@ -200,6 +228,7 @@ class ChatRepository {
         ...data,
         'userId': userId,
         'userName': resolvedName,
+        'unreadCount': unreadCount,
       });
     }
 

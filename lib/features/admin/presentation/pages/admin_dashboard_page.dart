@@ -24,11 +24,25 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
   Widget build(BuildContext context) {
     final rentals = ref.watch(allRentalsProvider);
     final notifications = ref.watch(adminNotificationsProvider);
+    final chatUnreadCount =
+        ref.watch(adminChatUnreadCountProvider).valueOrNull ?? 0;
     final colorScheme = Theme.of(context).colorScheme;
 
     final unreadCount = notifications.maybeWhen(
       data: (items) =>
           items.where((item) => !(item['isRead'] as bool? ?? false)).length,
+      orElse: () => 0,
+    );
+    final activeRentalCount = rentals.maybeWhen(
+      data: (items) => items
+          .where(
+            (item) => ![
+              'completed',
+              'cancelled',
+              'cancelled_by_admin',
+            ].contains((item['status'] ?? '').toString()),
+          )
+          .length,
       orElse: () => 0,
     );
 
@@ -311,6 +325,8 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
                           );
 
                       ref.invalidate(allRentalsProvider);
+                      ref.invalidate(userRentalsProvider);
+                      ref.invalidate(rentalHistoryProvider);
                     },
                     itemBuilder: (context) => const [
                       PopupMenuItem(value: 'confirmed', child: Text('Confirm')),
@@ -360,6 +376,76 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
         title: const Text('Dashboard Admin'),
         centerTitle: false,
         actions: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none_rounded),
+                onPressed: () => context.push('/admin-notifications'),
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      unreadCount > 99 ? '99+' : unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.shopping_cart_outlined),
+                onPressed: () => context.push('/admin-products'),
+              ),
+              if (activeRentalCount > 0)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      activeRentalCount > 99
+                          ? '99+'
+                          : activeRentalCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.delete_sweep_rounded),
             tooltip: 'Hapus semua data rental',
@@ -469,8 +555,8 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
                   },
                   labelBehavior:
                       NavigationDestinationLabelBehavior.onlyShowSelected,
-                  destinations: const [
-                    NavigationDestination(
+                  destinations: [
+                    const NavigationDestination(
                       icon: Icon(Icons.dashboard_outlined, color: Colors.white),
                       selectedIcon: Icon(
                         Icons.dashboard_rounded,
@@ -478,7 +564,7 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
                       ),
                       label: 'Dashboard',
                     ),
-                    NavigationDestination(
+                    const NavigationDestination(
                       icon: Icon(
                         Icons.inventory_2_outlined,
                         color: Colors.white,
@@ -490,24 +576,152 @@ class _AdminDashboardPageState extends ConsumerState<AdminDashboardPage> {
                       label: 'Produk',
                     ),
                     NavigationDestination(
-                      icon: Icon(
-                        Icons.chat_bubble_outline_rounded,
-                        color: Colors.white,
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            color: Colors.white,
+                          ),
+                          if (chatUnreadCount > 0)
+                            Positioned(
+                              right: -4,
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Text(
+                                  chatUnreadCount > 99
+                                      ? '99+'
+                                      : chatUnreadCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      selectedIcon: Icon(
-                        Icons.chat_bubble_rounded,
-                        color: Colors.white,
+                      selectedIcon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(
+                            Icons.chat_bubble_rounded,
+                            color: Colors.white,
+                          ),
+                          if (chatUnreadCount > 0)
+                            Positioned(
+                              right: -4,
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Text(
+                                  chatUnreadCount > 99
+                                      ? '99+'
+                                      : chatUnreadCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       label: 'Chat',
                     ),
                     NavigationDestination(
-                      icon: Icon(
-                        Icons.notifications_none_rounded,
-                        color: Colors.white,
+                      icon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(
+                            Icons.notifications_none_rounded,
+                            color: Colors.white,
+                          ),
+                          if (unreadCount > 0)
+                            Positioned(
+                              right: -4,
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Text(
+                                  unreadCount > 99
+                                      ? '99+'
+                                      : unreadCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      selectedIcon: Icon(
-                        Icons.notifications_rounded,
-                        color: Colors.white,
+                      selectedIcon: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(
+                            Icons.notifications_rounded,
+                            color: Colors.white,
+                          ),
+                          if (unreadCount > 0)
+                            Positioned(
+                              right: -4,
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Text(
+                                  unreadCount > 99
+                                      ? '99+'
+                                      : unreadCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       label: 'Notifikasi',
                     ),

@@ -32,6 +32,7 @@ class AdminChatListPage extends ConsumerWidget {
               final userName = chat['userName']?.toString() ?? 'Pelanggan';
               final lastMessage = chat['lastMessage']?.toString() ?? '-';
               final userId = chat['userId']?.toString() ?? '';
+              final unreadCount = (chat['unreadCount'] as int? ?? 0);
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -68,10 +69,25 @@ class AdminChatListPage extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                  ),
+                  trailing: unreadCount > 0
+                      ? Container(
+                          width: 22,
+                          height: 22,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            unreadCount > 99 ? '99+' : unreadCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                   onTap: () {
                     context.push('/admin-chat-detail', extra: userId);
                   },

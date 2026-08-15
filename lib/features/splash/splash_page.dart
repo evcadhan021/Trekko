@@ -50,10 +50,13 @@ class _SplashPageState extends State<SplashPage> {
                       color: Colors.white.withValues(alpha: 0.25),
                     ),
                   ),
-                  child: const Icon(
-                    Icons.terrain_rounded,
-                    size: 54,
-                    color: Colors.white,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/icon/logo trekko.png',
+                      width: 82,
+                      height: 82,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 26),

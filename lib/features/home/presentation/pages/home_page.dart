@@ -63,10 +63,14 @@ class HomePage extends ConsumerWidget {
                         color: colorScheme.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        Icons.terrain_rounded,
-                        color: colorScheme.primary,
-                        size: 20,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/icon/logo trekko.png',
+                          width: 34,
+                          height: 34,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
